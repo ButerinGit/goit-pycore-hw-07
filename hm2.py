@@ -18,6 +18,11 @@ def add_birthday(args, book):
     record = book.find(name)
     if not record:
         return "Contact not found."
+    # Перевірка формату дати
+    try:
+        datetime.strptime(birthday_str, "%d.%m.%Y")
+    except ValueError:
+        return "Invalid date format. Use DD.MM.YYYY"
     record.add_birthday(birthday_str)
     return f"Birthday for {name} added."
 
@@ -35,3 +40,45 @@ def birthdays(args, book):
     if not upcoming:
         return "No upcoming birthdays in the next week."
     return "Upcoming birthdays:\n" + "\n".join(upcoming)
+
+# === Симуляція адресної книги ===
+class Record:
+    def __init__(self, name):
+        self.name = name
+        self.birthday = None
+    def add_birthday(self, birthday_str):
+        self.birthday = Birthday(birthday_str)
+
+class Birthday:
+    def __init__(self, date_str):
+        self.value = datetime.strptime(date_str, "%d.%m.%Y")
+
+class AddressBook:
+    def __init__(self):
+        self.contacts = {"Alice": Record("Alice")}
+    def find(self, name):
+        return self.contacts.get(name)
+    def get_upcoming_birthdays(self):
+        return ["Alice - 10.07.1995"]
+
+book = AddressBook()
+
+# === Головний цикл ===
+commands = {
+    "add-birthday": add_birthday,
+    "show-birthday": show_birthday,
+    "birthdays": birthdays,
+}
+
+while True:
+    user_input = input(">>> ").strip()
+    if user_input in ["exit", "close"]:
+        print("Good bye!")
+        break
+    parts = user_input.split()
+    cmd, args = parts[0], parts[1:]
+    if cmd in commands:
+        result = commands[cmd](args, book)
+        print(result)
+    else:
+        print("Unknown command.")
